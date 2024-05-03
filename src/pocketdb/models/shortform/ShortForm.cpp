@@ -3,7 +3,6 @@
 // https://www.apache.org/licenses/LICENSE-2.0
 
 #include "pocketdb/models/shortform/ShortForm.h"
-
 #include "pocketdb/helpers/ShortFormHelper.h"
 
 PocketDb::ShortForm::ShortForm(PocketDb::ShortTxType type, ShortTxData txData, std::optional<ShortTxData> relatedContent)

@@ -6,7 +6,7 @@
 #define POCKETCONSENSUS_BLOCKING_HPP
 
 #include "pocketdb/consensus/Social.h"
-#include "pocketdb/models/dto/Blocking.h"
+#include "pocketdb/models/dto/action/Blocking.h"
 
 namespace PocketConsensus
 {
@@ -22,10 +22,6 @@ namespace PocketConsensus
         BlockingConsensus(int height) : SocialConsensus<Blocking>(height) {}
         ConsensusValidateResult Validate(const CTransactionRef& tx, const BlockingRef& ptx, const PocketBlockRef& block) override
         {
-            // Base validation with calling block or mempool check
-            if (auto[baseValidate, baseValidateCode] = SocialConsensus::Validate(tx, ptx, block); !baseValidate)
-                return {false, baseValidateCode};
-
             // Double blocking in chain
             if (auto[existsBlocking, blockingType] = PocketDb::ConsensusRepoInst.GetLastBlockingType(
                     *ptx->GetAddress(),
@@ -36,7 +32,7 @@ namespace PocketConsensus
                     return {false, SocialConsensusResult_DoubleBlocking};
             }
 
-            return Success;
+            return SocialConsensus::Validate(tx, ptx, block);
         }
         ConsensusValidateResult Check(const CTransactionRef& tx, const BlockingRef& ptx) override
         {
@@ -143,11 +139,12 @@ namespace PocketConsensus
                 if (!TransactionHelper::IsIn(*blockTx->GetType(), {ACTION_BLOCKING, ACTION_BLOCKING_CANCEL}))
                     continue;
 
-                auto blockPtx = static_pointer_cast<Blocking>(blockTx);
-
-                if (*blockPtx->GetHash() == *ptx->GetHash())
+                if (*blockTx->GetHash() == *ptx->GetHash())
                     continue;
 
+                auto blockPtx = static_pointer_cast<Blocking>(blockTx);
+
+                // TODO (brangr, o1q): disable blocking 1-1 - allow only 1-N
                 if (*ptx->GetAddress() == *blockPtx->GetAddress()) {
                     if (!IsEmpty(ptx->GetAddressTo()) &&
                         !IsEmpty(blockPtx->GetAddressTo()) &&
@@ -193,7 +190,7 @@ namespace PocketConsensus
     protected:
         const vector<ConsensusCheckpoint<BlockingConsensus>> m_rules = {
             {       0,       0, [](int height) { return make_shared<BlockingConsensus>(height); }},
-            { 1873500, 1114500, [](int height) { return make_shared<BlockingConsensus_checkpoint_multiple_blocking>(height); }}, // TODO (o1q): set checkpoint height for multiple locks
+            { 1873500, 1114500, [](int height) { return make_shared<BlockingConsensus_checkpoint_multiple_blocking>(height); }},
         };
     public:
         shared_ptr<BlockingConsensus> Instance(int height)
