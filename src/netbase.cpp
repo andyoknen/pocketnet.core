@@ -18,14 +18,8 @@
 #include <cstdint>
 #include <limits>
 
-#ifndef WIN32
-#include <fcntl.h>
-#else
+#ifdef WIN32
 #include <codecvt>
-#endif
-
-#ifdef USE_POLL
-#include <poll.h>
 #endif
 
 #if !defined(MSG_NOSIGNAL)
@@ -631,10 +625,6 @@ bool ConnectSocketDirectly(const CService &addrConnect, const Sock& sock, int nT
     // Create a sockaddr from the specified service.
     struct sockaddr_storage sockaddr;
     socklen_t len = sizeof(sockaddr);
-    if (sock.Get() == INVALID_SOCKET) {
-        LogPrintf("Cannot connect to %s: invalid socket\n", addrConnect.ToString());
-        return false;
-    }
     if (!addrConnect.GetSockAddr((struct sockaddr*)&sockaddr, &len)) {
         LogPrintf("Cannot connect to %s: unsupported network\n", addrConnect.ToString());
         return false;
