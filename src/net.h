@@ -413,6 +413,15 @@ public:
     void prepareForTransport(CSerializedNetMsg& msg, std::vector<unsigned char>& header) override;
 };
 
+struct CNodeOptions
+{
+    NetPermissionFlags permission_flags = NetPermissionFlags::PF_NONE;
+    std::unique_ptr<i2p::sam::Session> i2p_sam_session = nullptr;
+    bool prefer_evict = false;
+    size_t recv_flood_size{DEFAULT_MAXRECEIVEBUFFER * 1000};
+    bool use_v2transport = false;
+};
+
 /** Information about a peer */
 class CNode
 {
@@ -517,6 +526,22 @@ public:
 
     bool IsManualConn() const {
         return m_conn_type == ConnectionType::MANUAL;
+    }
+
+    bool IsManualOrFullOutboundConn() const
+    {
+        switch (m_conn_type) {
+        case ConnectionType::INBOUND:
+        case ConnectionType::FEELER:
+        case ConnectionType::BLOCK_RELAY:
+        case ConnectionType::ADDR_FETCH:
+                return false;
+        case ConnectionType::OUTBOUND_FULL_RELAY:
+        case ConnectionType::MANUAL:
+                return true;
+        } // no default case, so the compiler can warn about missing cases
+
+        assert(false);
     }
 
     bool IsBlockOnlyConn() const {
