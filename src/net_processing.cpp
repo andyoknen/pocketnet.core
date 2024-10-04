@@ -593,12 +593,13 @@ static void UpdatePreferredDownload(const CNode& node, CNodeState* state) EXCLUS
     nPreferredDownload += state->fPreferredDownload;
 }
 
-static void PushNodeVersion(CNode& pnode, CConnman& connman, int64_t nTime)
+static void PushNodeVersion(CNode& pnode, CConnman& connman)
 {
     // Note that pnode->GetLocalServices() is a reflection of the local
     // services we were offering when the CNode object was created for this
     // peer.
     ServiceFlags nLocalNodeServices = pnode.GetLocalServices();
+    const int64_t nTime{count_seconds(GetTime<std::chrono::seconds>())};
     uint64_t nonce = pnode.GetLocalNonce();
     int nNodeStartingHeight = pnode.GetMyStartingHeight();
     NodeId nodeid = pnode.GetId();
@@ -962,7 +963,7 @@ void PeerManager::InitializeNode(CNode *pnode) {
     }
 
     if (!pnode->IsInboundConn()) {
-        PushNodeVersion(*pnode, m_connman, GetTime());
+        PushNodeVersion(*pnode, m_connman);
     }
 }
 
@@ -2605,7 +2606,7 @@ void PeerManager::ProcessMessage(CNode& pfrom, const std::string& msg_type, CDat
 
         // Be shy and don't send version until we hear
         if (pfrom.IsInboundConn())
-            PushNodeVersion(pfrom, m_connman, GetAdjustedTime());
+            PushNodeVersion(pfrom, m_connman);
 
         // Change version
         const int greatest_common_version = std::min(nVersion, PROTOCOL_VERSION);
