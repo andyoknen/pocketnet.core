@@ -1,0 +1,22 @@
+name: Build
+run-name: "Build MacOS"
+
+on:
+  workflow_dispatch:
+  
+jobs:
+
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Check current directory
+        run: |
+          brew install automake berkeley-db4 libtool boost miniupnpc openssl pkg-config protobuf python qt libevent qrencode librsvg
+          CFLAGS=-Wno-error=implicit-function-declaration ./contrib/install_db4.sh .
+          export LDFLAGS="-L/usr/local/opt/openssl/lib"
+          export CPPFLAGS="-I/usr/local/opt/openssl/include"
+          ./autogen.sh
+          ./configure
+          make
+          make deploy
+          
