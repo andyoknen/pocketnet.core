@@ -13,10 +13,12 @@ jobs:
         uses: actions/checkout@v3
       - run: brew install automake berkeley-db4 libtool boost miniupnpc openssl pkg-config protobuf python qt libevent qrencode librsvg
       - run: CFLAGS=-Wno-error=implicit-function-declaration ./contrib/install_db4.sh .
+      - run: ./autogen.sh
       - name: Configure
         run: |
-          ./autogen.sh
-          ./configure LDFLAGS="-L/opt/homebrew/opt/openssl/lib" CFLAGS="-I/opt/homebrew/opt/openssl/include"
+          export LDFLAGS="-L/opt/homebrew/opt/openssl/lib"
+          export CPPFLAGS="-I/user/local/opt/openssl/include"
+          ./configure
       - name: Make
         run:
           make
