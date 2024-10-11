@@ -21,7 +21,7 @@ jobs:
           export CPPFLAGS="-I/opt/homebrew/opt/openssl/include"
           ./configure
       - name: Make
-        run:
+        run: |
           make
           make deploy
           
