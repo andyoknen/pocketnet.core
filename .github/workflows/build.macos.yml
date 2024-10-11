@@ -12,13 +12,13 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v3
       - run: brew install automake berkeley-db4 libtool boost miniupnpc openssl pkg-config protobuf python qt libevent qrencode librsvg
-      - run: ls -l /user/local/opt/openssl/include
+      - run: ls -l /opt/homebrew/opt/openssl/include
       - run: CFLAGS=-Wno-error=implicit-function-declaration ./contrib/install_db4.sh .
       - run: ./autogen.sh
       - name: Configure
         run: |
           export LDFLAGS="-L/opt/homebrew/opt/openssl/lib"
-          export CPPFLAGS="-I/user/local/opt/openssl/include"
+          export CPPFLAGS="-I/opt/homebrew/opt/openssl/include"
           ./configure
       - name: Make
         run:
