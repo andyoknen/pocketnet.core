@@ -11,8 +11,17 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v3
-      - run: brew install automake libtool boost miniupnpc protobuf qt qrencode librsvg
-      - run: ls -l /usr/local/Cellar/boost
+      - run: brew install automake libtool miniupnpc protobuf qt qrencode librsvg
+      - run: |
+          git clone --recursive https://github.com/boostorg/boost.git
+          cd boost
+          ./bootstrap.sh
+          ./b2 --prefix=./build toolset=clang-darwin cxxflags="-arch arm64" linkflags="-arch arm64" architecture=arm target-os=darwin -j$(sysctl -n hw.logicalcpu) --build-type=minimal --without-context --disable-filesystem2 --disable-coroutine --without-graph_parallel --without-mpi --without-python stage toolset=clang-darwin-$(sw_vers -productVersion | cut -d '.' -f 1,2) --with-toolset-xcode=$(xcode-select -p)/usr/bin
+          ./b2 --prefix=./build install
+      - name: Set up boost
+        run: echo "::set-env name=BOOST_ROOT::$(pwd)/boost/build"
+      - name: Set up env
+        run: export LD_LIBRARY_PATH=$(pwd)/boost/build/lib
       - run: CFLAGS=-Wno-error=implicit-function-declaration ./contrib/install_db4.sh .
       - run: ./autogen.sh
       - name: Configure
