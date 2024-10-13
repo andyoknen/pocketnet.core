@@ -11,21 +11,17 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v3
-      - name: Install boost
-        uses: MarkusJx/install-boost@v2.4.5
-        id: install-boost
-        with:
-            # REQUIRED: Specify the required boost version
-            # A list of supported versions can be found here:
-            # https://github.com/MarkusJx/prebuilt-boost/blob/main/versions-manifest.json
-            boost_version: 1.73.0
-      - run: brew install berkeley-db4 automake libtool miniupnpc protobuf qt qrencode librsvg
-      - run: CFLAGS=-Wno-error=implicit-function-declaration ./contrib/install_db4.sh .
-      - run: ./autogen.sh
+      - name: Install general dependencies
+        run: brew install berkeley-db4 automake make libtool miniupnpc protobuf qt qrencode librsvg python-setuptools          
+      - name: Build depends
+        run: cd depends && make && cd ..
+      - name: Install bdb4
+        run: CFLAGS=-Wno-error=implicit-function-declaration ./contrib/install_db4.sh .
       - name: Configure
         run: |
           export LDFLAGS="-L/opt/homebrew/opt/openssl/lib"
           export CPPFLAGS="-I/opt/homebrew/opt/openssl/include"
+          ./autogen.sh
           ./configure
       - name: Make
         run: |
