@@ -12,7 +12,7 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v3
       - name: Install general dependencies
-        run: brew instatomake make libtool miniupnpc protobuf qrencoll automake make libtool miniupnpc protobuf qrencode librsvg python-setuptools          
+        run: brew install automake make libtool miniupnpc protobuf qrencode librsvg python-setuptools
       - name: Build depends
         run: cd depends && make && cd ..
       - name: Configure
